@@ -10,30 +10,62 @@
 	mov	sp,0
 	sti			; Enable interrupts
 
-	mov	bx, wel		; Print welcome
+	mov	si, wel		; Print welcome
 	call	print_string
+
+	mov	al,0xFE
+	call	print_hex
 
 	jmp	$
 
 
 
 
+;;;;;;;;;;
+; Prints characters until 0-byte
+; CS:SI = start of string
+;;;;;;;;;;
 
 print_string:
-	push	bx
-	mov	ah,0x0e
+	mov	ah,0x0e		; TTY 
 .loop:
-	mov	al,[bx]
-	cmp	al, 0
-	je	.end
+	lodsb			; Load next char (CS:SI) and increment SI
+	or	al, al		; Like compare to zero, just smaller
+	jz	.end
 	int	0x10
-	inc	bx
 	jmp 	.loop
 .end:
-	pop	bx
 	ret
 
-wel:	db	"Suckless Bootloader",0xA,0xD,0
+
+;;;;;;;;;;
+; Prints a byte in hexadecimal
+; al = byte
+;;;;;;;;;;
+
+print_hex:
+	mov	ah, 0x0e	; TTY
+	mov	cx, 2		; nybbles left to print
+	push	ax		; Save al for processing lower nybble later
+	shr	al,4		; Shift upper nybble down
+.loop:
+	and	al,0b1111	; Mask lower nybble
+	cmp	al,10		; A-F or 0-9?
+	jl	.digit
+	add	al,'A'-10	; Generate ASCII for A-F
+	jmp	.print
+.digit:
+	add	al,'0'		; Generate ASCII for 0-9
+.print:
+	int	0x10
+	dec	cx
+	jz	.end
+	pop	ax
+	jmp	.loop
+.end:
+	ret
+
+wel:	db	"=== Suckless Bootloader ===",0xA,0xD,0
 
 times 510-($-$$) db 0		; MBR Signature
 dw 0xAA55
