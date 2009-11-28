@@ -1,4 +1,4 @@
 all:
 	nasm -f bin sbl.s
 run:
-	qemu -hda ./boot
+	qemu -hda ./sbl
