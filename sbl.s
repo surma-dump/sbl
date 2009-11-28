@@ -21,12 +21,12 @@ read_disk:
 	mov	ah,0x02		; Read disk
 	mov	al,1		; read 1 Sector at:
 	mov	ch,0		; Track 0
-	mov	cl,1		; Sector 1
+	mov	cl,2		; Sector 2
 	mov	dh,0		; Head 0
 	mov	bx,512		; Write to ES:BX
 	int	0x13
 
-	jb	.error
+	jb	.error		; CF=1 if error occured
 	mov	si,disk_read_success
 	jmp	.print
 .error:
@@ -91,7 +91,7 @@ print_hex:
 .end:
 	ret
 
-welcome_msg	db	"=== Suckless Bootloader ===",0xA,0xD,0
+welcome_msg		db	"=== Suckless Bootloader ===",0xA,0xD,0
 disk_read_success	db "[*] Disk read successfull",0xA,0xD,0
 disk_read_fail		db "[!] Disk read failed!",0xA,0xD,0
 
