@@ -1,9 +1,9 @@
 init:
 	cli			; Disable interrupts
 
-	mov	ax,0x7c0	; We are at 0000:07c0
+	mov	ax,0x7c0	; We are at 0000:7c00
 	mov	ds,ax		; turn that into
-	mov	es,ax		; 07c0:0000
+	mov	es,ax		; 07c0:0000 for correct jumping
 	
 
 	mov	ax,0x9000	; Setup Stack
