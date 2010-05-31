@@ -1,9 +1,6 @@
+[ORG 0x7c00]
 init:
 	cli			; Disable interrupts
-
-	mov	ax,0x7c0	; We are at 0000:7c00
-	mov	ds,ax		; turn that into
-	mov	es,ax		; 07c0:0000 for correct jumping
 
 	mov	ax,0x9000	; Setup Stack
 	mov	ss,ax	
@@ -43,7 +40,7 @@ debug:
 	je	.end
 	jmp	.loop
 .end:
-
+	jmp .end
 
 
 ;;;;;;;;;;
@@ -90,9 +87,9 @@ print_hex:
 .end:
 	ret
 
-welcome_msg		db	"=== Suckless Bootloader ===",0xA,0xD,0
-disk_read_success	db "[*] Disk read successfull",0xA,0xD,0
-disk_read_fail		db "[!] Disk read failed!",0xA,0xD,0
+welcome_msg:		db "=== Suckless Bootloader ===",0xA,0xD,0
+disk_read_success:	db "[*] Disk read successfull",0xA,0xD,0
+disk_read_fail:		db "[!] Disk read failed!",0xA,0xD,0
 
 times 510-($-$$) db 0		; MBR Signature
 dw 0xAA55
