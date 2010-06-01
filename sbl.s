@@ -15,23 +15,24 @@ init:
 
 read_disk:
 	mov	ah,0x02		; Read disk
-	mov	al,1		; read 1 Sector at:
-	mov	ch,0		; Track 0
-	mov	cl,2		; Sector 2
-	mov	dh,0		; Head 0
+	mov	al,1		; read n Sectors
+	mov	ch,0		; Track 
+	mov	cl,2		; Sector 
+	mov	dh,0		; Head 
 	mov	bx,512		; Write to ES:BX
 	int	0x13
 
 	jb	.error		; CF=1 if error occured
 	mov	si,disk_read_success
-	jmp	.print
+	call	print_string
+	jmp	debug
 .error:
 	mov	si,disk_read_fail
-.print:
 	call	print_string
+	jmp	hang
 
-	mov	si, 512
 debug:
+	mov	si, 512 
 .loop:
 	lodsb
 	call	print_hex
@@ -40,7 +41,9 @@ debug:
 	je	.end
 	jmp	.loop
 .end:
-	jmp .end
+hang:
+	cli
+	hlt
 
 
 ;;;;;;;;;;
