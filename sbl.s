@@ -1,4 +1,5 @@
 [ORG 0x7c00]
+%define MBR_ADDR 0x4000
 init:
 	cli			; Disable interrupts
 
@@ -13,34 +14,24 @@ init:
 	mov	ah,0x00		; Reset Disks
 	int	0x13
 
-read_disk:
+read_mbr:
 	mov	ah,0x02		; Read disk
 	mov	al,1		; read n Sectors
 	mov	ch,0		; Track 
-	mov	cl,2		; Sector 
+	mov	cl,1		; Sector 
 	mov	dh,0		; Head 
-	mov	bx,512		; Write to ES:BX
+	mov	bx,MBR_ADDR	; Write to ES:BX
 	int	0x13
 
-	jb	.error		; CF=1 if error occured
-	mov	si,disk_read_success
-	call	print_string
-	jmp	debug
-.error:
-	mov	si,disk_read_fail
-	call	print_string
-	jmp	hang
-
-debug:
-	mov	si, 512 
-.loop:
-	lodsb
+dump_partitions:
+	mov	si, MBR_ADDR;+446
+.loop:	lodsb
+	;cmp	si, MBR_ADDR+446+16*4
 	call	print_hex
-	mov	cx, si
-	cmp	cx, 512+512
-	je	.end
+	cmp	si, MBR_ADDR+512
+	je	hang
 	jmp	.loop
-.end:
+
 hang:
 	cli
 	hlt
@@ -91,8 +82,5 @@ print_hex:
 	ret
 
 welcome_msg:		db "=== Suckless Bootloader ===",0xA,0xD,0
-disk_read_success:	db "[*] Disk read successfull",0xA,0xD,0
-disk_read_fail:		db "[!] Disk read failed!",0xA,0xD,0
 
-times 510-($-$$) db 0		; MBR Signature
-dw 0xAA55
+times 446-($-$$) db 0		; MBR Signature
