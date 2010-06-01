@@ -23,19 +23,23 @@ read_mbr:
 	mov	bx,MBR_ADDR	; Write to ES:BX
 	int	0x13
 
-dump_partitions:
-	mov	si, MBR_ADDR;+446
-.loop:	lodsb
-	;cmp	si, MBR_ADDR+446+16*4
-	call	print_hex
-	cmp	si, MBR_ADDR+512
-	je	hang
-	jmp	.loop
+boot_partition1:
+	mov	si, MBR_ADDR+446 	; Start at MBR
+	lodsb
+
+	cmp	al, 0x80		; Is bootable?
+	jne	part1_not_bootable
+
+	jmp	hang
+
+part1_not_bootable:
+	mov	si, bootable_err
+	call	print_string
+	jmp	hang
 
 hang:
 	cli
 	hlt
-
 
 ;;;;;;;;;;
 ; Prints characters until 0-byte
@@ -82,5 +86,6 @@ print_hex:
 	ret
 
 welcome_msg:		db "=== Suckless Bootloader ===",0xA,0xD,0
+bootable_err:		db "[!] Partition 1 not bootable",0xA,0xD,0
 
 times 446-($-$$) db 0		; MBR Signature
